@@ -56,7 +56,6 @@
     "map silent! nmap <F6> :SyntasticToggleMode<CR>
 
     cabbr <expr> %% expand('%:p:h')
-    set diffexpr=MyDiff()
 
     set backup                                      " keep backups
     " Directories for backup, swap, and views will be set by the call to InitializeDirectories() at the bottom
@@ -227,31 +226,6 @@
 function! GenerateTagsFile()
     let output_file = '.tags'
     execute '!ctags -R -f ' . output_file . " . $(python -c \"import os.path, sys; print(' '.join(f'{d}' for d in sys.path if os.path.isdir(d)))\")"
-endfunction
-
-
-function! MyDiff()
-  let opt = '-a --binary '
-  if &diffopt =~ 'icase' | let opt = opt . '-i ' | endif
-  if &diffopt =~ 'iwhite' | let opt = opt . '-b ' | endif
-  let arg1 = v:fname_in
-  if arg1 =~ ' ' | let arg1 = '"' . arg1 . '"' | endif
-  let arg2 = v:fname_new
-  if arg2 =~ ' ' | let arg2 = '"' . arg2 . '"' | endif
-  let arg3 = v:fname_out
-  if arg3 =~ ' ' | let arg3 = '"' . arg3 . '"' | endif
-  let eq = ''
-  if $VIMRUNTIME =~ ' '
-    if &sh =~ '\<cmd'
-      let cmd = '""' . $VIMRUNTIME . '\diff"'
-      let eq = '"'
-    else
-      let cmd = substitute($VIMRUNTIME, ' ', '" ', '') . '\diff"'
-    endif
-  else
-    let cmd = $VIMRUNTIME . '\diff'
-  endif
-  silent execute '!' . cmd . ' ' . opt . arg1 . ' ' . arg2 . ' > ' . arg3 . eq
 endfunction
 
 
