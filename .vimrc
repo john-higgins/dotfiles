@@ -1,6 +1,6 @@
 
 " Notes {
-  " Last updated: 10/02/2018
+  " Last updated: 27/02/2018
 
   " Requirements:
   " - Git
@@ -11,7 +11,7 @@
   " - https://github.com/spf13/spf13-vim
   " - https://www.youtube.com/watch?v=XA2WjJbmmoM
 
-  " TODO: Plugins, cross-compatibility, colorschemes
+  " TODO: Plugins, cross-compatibility
 " }
 
 
@@ -22,14 +22,14 @@
   " }
 
   " Windows Compatibility {
-    " On Windows, also use '.vim' instead of 'vimfiles'; this makes synchronization across different platforms easier. 
+    " On Windows, also use '.vim' instead of 'vimfiles'; this makes synchronization across different platforms easier.
     if has('win32') || has('win64')
         set runtimepath=$HOME/.vim,$VIM/vimfiles,$VIMRUNTIME,$VIM/vimfiles/after,$HOME/.vim/after
         source $VIMRUNTIME/mswin.vim
         behave mswin
     endif
   " }
- 
+
   " Setup Bundle Support {
     " The next two lines ensure that the ~/.vim/bundle/ system works
     "runtime! autoload/pathogen.vim
@@ -42,33 +42,24 @@
 
 " General {
     if !has('win32') && !has('win64')
-        set term=$TERM                      " Make arrow and other keys work
+        set term=$TERM                              " Make arrow and other keys work
     endif
 
     scriptencoding utf-8
-    set mouse=a                             " automatically enable mouse usage
-    set shortmess+=filmnrxoOtT              " abbreviation of messages (avoids 'hit enter')
+    set mouse=a                                     " automatically enable mouse usage
+    set shortmess+=filmnrxoOtT                      " abbreviation of messages (avoids 'hit enter')
     set viewoptions=folds,options,cursor,unix,slash " better unix / windows compatibility
-    set history=1000                        " Store a ton of history (default is 20)
+    set history=1000                                " Store a ton of history (default is 20)
     set dictionary+=/usr/share/dict/words
-    "set spell spelllang=en_gb              " spell checking on
+    "set spell spelllang=en_gb                      " spell checking on
     map <F7> :setlocal spell! spelllang=en_gb<CR>
-    map silent! nmap <F6> :SyntasticToggleMode<CR>
+    "map silent! nmap <F6> :SyntasticToggleMode<CR>
 
     cabbr <expr> %% expand('%:p:h')
     set diffexpr=MyDiff()
 
-    set backup                              " keep backups
-
-    " Set directories
-    "set backupdir=$HOME/.vim/.backup/       " directory for .bak
-    "set directory=$HOME/.vim/.swap/         " directory for .swp
-    "set viewdir=$HOME/.vim/.views/          " directory for views
-
-    " Creating directories if they don't exist
-    "silent execute '!mkdir -p $HOME/.vim/.backup'
-    "silent execute '!mkdir -p $HOME/.vim/.swap'
-    "silent execute '!mkdir -p $HOME/.vim/.views'
+    set backup                                      " keep backups
+    " Directories for backup, swap, and views will be set by the call to InitializeDirectories() at the bottom
 " }
 
 
@@ -81,29 +72,27 @@
     set expandtab                           " tabs are spaces, not tabs
     set smarttab                            " use shiftwidth instead of tabstop at start of lines
     set softtabstop=4                       " let backspace delete indent
-    "set matchpairs+=<:>                    " match, to be used with % 
     set pastetoggle=<F12>                   " pastetoggle (sane indentation on pastes)
-    "set comments=sl:/\*,mb:\*,elx:\*/      " auto format comment blocks
     " Remove trailing whitespaces and \^M chars
     autocmd FileType c,cpp,java,php,js,python,twig,xml,yml autocmd BufWritePre <buffer> :call setline(1,map(getline(1,"$"),'substitute(v:val,"\\\\s\\\\+$","","")'))
-    filetype plugin indent on   " Automatically detect file types.
-    syntax on                   " syntax highlighting
+    filetype plugin indent on               " Automatically detect file types.
+    syntax on                               " syntax highlighting
 " }
 
 
 " Plugins {
-   "set runtimepath+=$HOME/.vim/bundle/Vundle.vim/
-   "call vundle#begin()
+   set runtimepath+=$HOME/.vim/bundle/Vundle.vim/
+   call vundle#begin()
 
-   "Plugin 'VundleVim/Vundle.vim'
+   Plugin 'VundleVim/Vundle.vim'
    "Plugin 'scrooloose/nerdtree'
    "Plugin 'scrooloose/syntastic'
-   "Plugin 'tpope/vim-fugitive'
+   Plugin 'tpope/vim-fugitive'
    "Plugin 'tpope/vim-surround'
    "Plugin 'pangloss/vim-javascript'
    "Plugin 'SirVer/ultisnips'
    "Plugin 'honza/vim-snippets'
-   "Plugin 'flazz/vim-colorschemes'
+   Plugin 'flazz/vim-colorschemes'
    "Plugin 'vimwiki/vimwiki'
    "Plugin 'davidhalter/jedi-vim'
    "Plugin 'elzr/vim-json'
@@ -111,7 +100,7 @@
    "Plugin 'jistr/vim-nerdtree-tabs'
    "Plugin 'Lokaltog/powerline', {'rtp': 'powerline/bindings/vim/'}
 
-   "call vundle#end()
+   call vundle#end()
 
    " UltiSnips {
        let g:UltiSnipsExpandTrigger="<tab>"
@@ -177,8 +166,15 @@
     "  --languages=python
     "  --python-kinds=-iv
     set tags=.tags
-    command MakeTags !ctags -R -f .tags . $(python -c "import os.path, sys; print(' '.join(f'{d}' for d in sys.path if os.path.isdir(d)))")
+    "command MakeTags :call GenerateTagsFile()
   " }
+
+  " Search {
+    set incsearch                                   " incremental search
+    set ignorecase                                  " case insensitive search
+    set smartcase                                   " case sensitive when uppercase
+  " }
+
 " }
 
 
@@ -187,10 +183,54 @@
     nmap <leader> html :read $HOME/.vim/snippets/skeleton.html<CR>
 " }
 
+
+ " Vim UI {
+    try
+        colorscheme minimalist
+    catch /^Vim\%((\a\+)\)\=:E185/
+        colorscheme ron
+    endtry
+
+    set showmode                                                    " display the current mode
+    set cursorline                                                  " highlight current line
+    highlight CursorLine ctermbg=0
+    set colorcolumn=80,120                                          " set column markers
+
+    set list
+    set listchars=tab:>.,trail:.,extends:\#,nbsp:.                  " show dodgy whitespace
+
+
+    if has('statusline')
+        highlight StatusLine ctermfg=28 ctermbg=0
+        highlight StatusLineNC ctermfg=32 ctermbg=0
+        set statusline=
+        set statusline+=%#StatusLineNC#
+        set statusline+=%F                                          " full path and filename
+        set statusline+=%#Statement#
+        set statusline+=%m                                          " modified flag
+        set statusline+=%=                                          " left / right divider
+        set statusline+=%#StatusLine#
+        set statusline+=%{fugitive#statusline()}
+        set statusline+=%#LineNr#
+        set statusline+=\ %y                                        " filetype
+        set statusline+=\ %{&fileencoding?&fileencoding:&encoding}
+        set statusline+=\ %p%%
+        set statusline+=\ %#Special#%l%#LineNr#[%L]:%c
+        set laststatus=2                                            " always show the statusline
+    endif
+" }
+
+
 " Functions {
 
 
-function MyDiff()
+function! GenerateTagsFile()
+    let output_file = '.tags'
+    execute '!ctags -R -f ' . output_file . " . $(python -c \"import os.path, sys; print(' '.join(f'{d}' for d in sys.path if os.path.isdir(d)))\")"
+endfunction
+
+
+function! MyDiff()
   let opt = '-a --binary '
   if &diffopt =~ 'icase' | let opt = opt . '-i ' | endif
   if &diffopt =~ 'iwhite' | let opt = opt . '-b ' | endif
@@ -215,11 +255,11 @@ function MyDiff()
 endfunction
 
 
-function InitializeDirectories()
-    let parent = $HOME 
+function! InitializeDirectories()
+    let parent = $HOME
     let prefix = '.vim'
     let dir_list = { '.backup': 'backupdir', '.views': 'viewdir', '.swap': 'directory' }
-    
+
     for [dirname, settingname] in items(dir_list)
         let directory = parent . "/" . prefix . "/" . dirname . "/"
         if exists("\*mkdir")
