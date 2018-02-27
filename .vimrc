@@ -52,8 +52,9 @@
     set history=1000                                " Store a ton of history (default is 20)
     set dictionary+=/usr/share/dict/words
     "set spell spelllang=en_gb                      " spell checking on
-    map <F7> :setlocal spell! spelllang=en_gb<CR>
-    "map silent! nmap <F6> :SyntasticToggleMode<CR>
+    silent! nnoremap <F6> :setlocal spell! spelllang=en_gb<CR>
+    silent! nnoremap <F7> :SyntasticToggleMode<CR>
+    silent! nnoremap <F8> :SyntasticCheck<CR>
 
     cabbr <expr> %% expand('%:p:h')
 
@@ -85,7 +86,7 @@
 
    Plugin 'VundleVim/Vundle.vim'
    "Plugin 'scrooloose/nerdtree'
-   "Plugin 'scrooloose/syntastic'
+   Plugin 'scrooloose/syntastic'
    Plugin 'tpope/vim-fugitive'
    "Plugin 'tpope/vim-surround'
    "Plugin 'pangloss/vim-javascript'
@@ -130,9 +131,9 @@
    " Syntastic {
        let g:syntastic_always_populate_loc_list = 1
        let g:syntastic_auto_loc_list = 1
-       let g:syntastic_check_on_open = 1
+       let g:syntastic_check_on_open = 0
        let g:syntastic_check_on_wq = 0
-       let g:syntastic_python_checkers = ['pep8']
+       let g:syntastic_python_checkers = ['pylint', 'pep8']
    " }
 
    " JSON {
@@ -215,6 +216,9 @@
         set statusline+=\ %{&fileencoding?&fileencoding:&encoding}
         set statusline+=\ %p%%
         set statusline+=\ %#Special#%l%#LineNr#[%L]:%c
+        set statusline+=%#warningmsg#
+        set statusline+=%{SyntasticStatuslineFlag()}
+        set statusline+=%*
         set laststatus=2                                            " always show the statusline
     endif
 " }
