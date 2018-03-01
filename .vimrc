@@ -84,6 +84,7 @@
    set runtimepath+=$HOME/.vim/bundle/Vundle.vim/
    call vundle#begin()
 
+   " git clone https://github.com/VundleVim/Vundle.vim.git ~/.vim/bundle/Vundle.vim
    Plugin 'VundleVim/Vundle.vim'
    "Plugin 'scrooloose/nerdtree'
    Plugin 'scrooloose/syntastic'
@@ -191,6 +192,8 @@
         colorscheme ron
     endtry
 
+    set splitright                                                  " open new split panes to the right
+
     set showmode                                                    " display the current mode
     set cursorline                                                  " highlight current line
     highlight CursorLine ctermbg=0
@@ -242,7 +245,7 @@ function! InitializeDirectories()
         let directory = parent . "/" . prefix . "/" . dirname . "/"
         if exists("\*mkdir")
             if !isdirectory(directory)
-                call mkdir(directory)
+                call mkdir(directory, 'p', 0700)
             endif
         endif
         if !isdirectory(directory)
