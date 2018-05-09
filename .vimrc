@@ -1,6 +1,6 @@
 
 " Notes {
-  " Last updated: 27/02/2018
+  " Last updated: 09/05/2018
 
   " Requirements:
   " - Git
@@ -53,8 +53,8 @@
     set dictionary+=/usr/share/dict/words
     "set spell spelllang=en_gb                      " spell checking on
     silent! nnoremap <F6> :setlocal spell! spelllang=en_gb<CR>
-    silent! nnoremap <F7> :SyntasticToggleMode<CR>
-    silent! nnoremap <F8> :SyntasticCheck<CR>
+    "silent! nnoremap <F7> :SyntasticToggleMode<CR>
+    "silent! nnoremap <F8> :SyntasticCheck<CR>
 
     cabbr <expr> %% expand('%:p:h')
 
@@ -73,6 +73,7 @@
     set smarttab                            " use shiftwidth instead of tabstop at start of lines
     set softtabstop=4                       " let backspace delete indent
     set pastetoggle=<F12>                   " pastetoggle (sane indentation on pastes)
+    set backspace=indent,eol,start          " make backspace work
     " Remove trailing whitespaces and \^M chars
     autocmd FileType c,cpp,java,php,js,python,twig,xml,yml autocmd BufWritePre <buffer> :call setline(1,map(getline(1,"$"),'substitute(v:val,"\\\\s\\\\+$","","")'))
     filetype plugin indent on               " Automatically detect file types.
@@ -85,21 +86,23 @@
    call vundle#begin()
 
    " git clone https://github.com/VundleVim/Vundle.vim.git ~/.vim/bundle/Vundle.vim
-   Plugin 'VundleVim/Vundle.vim'
-   "Plugin 'scrooloose/nerdtree'
-   Plugin 'scrooloose/syntastic'
-   Plugin 'tpope/vim-fugitive'
-   "Plugin 'tpope/vim-surround'
-   "Plugin 'pangloss/vim-javascript'
+   "Plugin 'Lokaltog/powerline', {'rtp': 'powerline/bindings/vim/'}
    "Plugin 'SirVer/ultisnips'
-   "Plugin 'honza/vim-snippets'
-   Plugin 'flazz/vim-colorschemes'
-   "Plugin 'vimwiki/vimwiki'
    "Plugin 'davidhalter/jedi-vim'
    "Plugin 'elzr/vim-json'
-   "Plugin 'nvie/vim-flake8'
+   "Plugin 'honza/vim-snippets'
    "Plugin 'jistr/vim-nerdtree-tabs'
-   "Plugin 'Lokaltog/powerline', {'rtp': 'powerline/bindings/vim/'}
+   "Plugin 'nvie/vim-flake8'
+   "Plugin 'pangloss/vim-javascript'
+   "Plugin 'scrooloose/nerdtree'
+   "Plugin 'scrooloose/syntastic'
+   "Plugin 'tpope/vim-surround'
+   "Plugin 'vimwiki/vimwiki'
+   Plugin 'VundleVim/Vundle.vim'
+   Plugin 'flazz/vim-colorschemes'
+   Plugin 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
+   Plugin 'tpope/vim-fugitive'
+   Plugin 'w0rp/ale'
 
    call vundle#end()
 
@@ -130,16 +133,30 @@
    " }
 
    " Syntastic {
-       let g:syntastic_always_populate_loc_list = 1
-       let g:syntastic_auto_loc_list = 1
-       let g:syntastic_check_on_open = 0
-       let g:syntastic_check_on_wq = 0
-       let g:syntastic_python_checkers = ['pylint', 'pep8']
+       "let g:syntastic_always_populate_loc_list = 1
+       "let g:syntastic_auto_loc_list = 1
+       "let g:syntastic_check_on_open = 0
+       "let g:syntastic_check_on_wq = 0
+       "let g:syntastic_python_checkers = ['pylint', 'pep8']
    " }
 
    " JSON {
        nmap <leader>jt <Esc>:%!python -m json.tool<CR><Esc>:set filetype=json<CR>
    " }
+
+   " fzf {
+       map <C-p> :FZF<CR>
+   " }
+
+   " ALE {
+       "let g:ale_lint_on_text_changed = 'never'
+       "let g:ale_lint_on_save = 1
+       "let g:ale_lint_on_enter = 0
+
+       "let g:ale_python_pylint_options = '--load-plugins pylint_django'
+   " }
+
+
 " }
 
 
@@ -167,7 +184,7 @@
     "  --languages=python
     "  --python-kinds=-iv
     set tags=.tags
-    "command MakeTags :call GenerateTagsFile()
+    command MakeTags :call GenerateTagsFile()
   " }
 
   " Search {
@@ -187,7 +204,7 @@
 
  " Vim UI {
     try
-        colorscheme minimalist
+        colorscheme wombat256i
     catch /^Vim\%((\a\+)\)\=:E185/
         colorscheme ron
     endtry
@@ -220,7 +237,7 @@
         set statusline+=\ %p%%
         set statusline+=\ %#Special#%l%#LineNr#[%L]:%c
         set statusline+=%#warningmsg#
-        set statusline+=%{SyntasticStatuslineFlag()}
+        "set statusline+=%{SyntasticStatuslineFlag()}
         set statusline+=%*
         set laststatus=2                                            " always show the statusline
     endif
@@ -282,6 +299,30 @@ function! FileSize()
         return (bytes / 1024) . "K"
     endif
 endfunction
+
+
+" Use the correct file source, based on context
+function! ContextualFZF()
+    " Determine if inside a git repo
+    silent exec "!git rev-parse --show-toplevel"
+    redraw!
+
+    if v:shell_error
+        " Search in current directory
+        call fzf#run({
+          \'sink': 'e',
+          \'down': '40%',
+        \})
+    else
+        " Search in entire git repo
+        call fzf#run({
+          \'sink': 'e',
+          \'down': '40%',
+          \'source': 'git ls-tree --full-tree --name-only -r HEAD',
+        \})
+    endif
+endfunction
+map <C-p> :call ContextualFZF()<CR>
 
 
 call InitializeDirectories()
