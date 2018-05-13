@@ -1,251 +1,300 @@
 
-" Notes {
-  " Last updated: 09/05/2018
+" =========================================================
+"                           Notes
+" Last updated: 13/05/2018
 
-  " Requirements:
-  " - Git
-  " - Python 3.6.x
-  " - ctags
+" Requirements:
+" - Git
+" - Python 3.6.x
+" - ctags
 
-  " Based on:
-  " - https://github.com/spf13/spf13-vim
-  " - https://www.youtube.com/watch?v=XA2WjJbmmoM
+" Based on:
+" - https://github.com/spf13/spf13-vim/blob/3.0/.vimrc
+" - https://github.com/HuntedCodes/.dotfiles/blob/master/dotfiles/files/.vimrc
+" - https://www.youtube.com/watch?v=XA2WjJbmmoM
 
-  " TODO: Plugins, cross-compatibility
-" }
-
-
-" Environment {
-  " Basics {
-    set nocompatible        " must be first line
-    set background=dark     " Assume a dark background
-  " }
-
-  " Windows Compatibility {
-    " On Windows, also use '.vim' instead of 'vimfiles'; this makes synchronization across different platforms easier.
-    if has('win32') || has('win64')
-        set runtimepath=$HOME/.vim,$VIM/vimfiles,$VIMRUNTIME,$VIM/vimfiles/after,$HOME/.vim/after
-        source $VIMRUNTIME/mswin.vim
-        behave mswin
-    endif
-  " }
-
-  " Setup Bundle Support {
-    " The next two lines ensure that the ~/.vim/bundle/ system works
-    "runtime! autoload/pathogen.vim
-    "silent! call pathogen\#helptags()
-    "silent! call pathogen\#runtime_append_all_bundles()
-  " }
-
-" }
+" TODO: Plugins, cross-compatibility
 
 
-" General {
-    if !has('win32') && !has('win64')
-        set term=$TERM                              " Make arrow and other keys work
-    endif
+" =========================================================
+"                           Environment
+set nocompatible
+set encoding=utf-8
 
-    scriptencoding utf-8
-    set mouse=a                                     " automatically enable mouse usage
-    set shortmess+=filmnrxoOtT                      " abbreviation of messages (avoids 'hit enter')
-    set viewoptions=folds,options,cursor,unix,slash " better unix / windows compatibility
-    set history=1000                                " Store a ton of history (default is 20)
-    set dictionary+=/usr/share/dict/words
-    "set spell spelllang=en_gb                      " spell checking on
-    silent! nnoremap <F6> :setlocal spell! spelllang=en_gb<CR>
-    "silent! nnoremap <F7> :SyntasticToggleMode<CR>
-    "silent! nnoremap <F8> :SyntasticCheck<CR>
+" Identify platform
+silent function! OSX()
+    return has('macunix')
+endfunction
 
-    cabbr <expr> %% expand('%:p:h')
+silent function! LINUX()
+    return has('unix') && !has('macunix') && !has('win32unix')
+endfunction
 
-    set backup                                      " keep backups
-    " Directories for backup, swap, and views will be set by the call to InitializeDirectories() at the bottom
-" }
+silent function! WINDOWS()
+    return  (has('win32') || has('win64'))
+endfunction
 
-
-" Formatting {
-    set nu                                  " turn on line numbers
-    set nowrap                              " wrap long lines
-    set tabstop=4                           " 4 space tab
-    set shiftwidth=4                        " the amount to block indent when using < and >
-    set autoindent                          " indent at the same level of the previous line
-    set expandtab                           " tabs are spaces, not tabs
-    set smarttab                            " use shiftwidth instead of tabstop at start of lines
-    set softtabstop=4                       " let backspace delete indent
-    set pastetoggle=<F12>                   " pastetoggle (sane indentation on pastes)
-    set backspace=indent,eol,start          " make backspace work
-    " Remove trailing whitespaces and \^M chars
-    autocmd FileType c,cpp,java,php,js,python,twig,xml,yml autocmd BufWritePre <buffer> :call setline(1,map(getline(1,"$"),'substitute(v:val,"\\\\s\\\\+$","","")'))
-    filetype plugin indent on               " Automatically detect file types.
-    syntax on                               " syntax highlighting
-" }
+" Windows Compatibility
+" On Windows, also use '.vim' instead of 'vimfiles'.
+" This makes synchronization across different platforms easier.
+if WINDOWS()
+    set runtimepath=[
+                \$HOME/.vim,
+                \$VIM/vimfiles,
+                \$VIMRUNTIME,
+                \$VIM/vimfiles/after,
+                \$HOME/.vim/after,
+                \]
+    source $VIMRUNTIME/mswin.vim
+    behave mswin
+endif
 
 
-" Plugins {
-   set runtimepath+=$HOME/.vim/bundle/Vundle.vim/
-   call vundle#begin()
+" =========================================================
+"                           General
+if !WINDOWS()
+    set term=$TERM                  " Make arrow and other keys work
+endif
 
-   " git clone https://github.com/VundleVim/Vundle.vim.git ~/.vim/bundle/Vundle.vim
-   "Plugin 'Lokaltog/powerline', {'rtp': 'powerline/bindings/vim/'}
-   "Plugin 'SirVer/ultisnips'
-   "Plugin 'davidhalter/jedi-vim'
-   "Plugin 'elzr/vim-json'
-   "Plugin 'honza/vim-snippets'
-   "Plugin 'jistr/vim-nerdtree-tabs'
-   "Plugin 'nvie/vim-flake8'
-   "Plugin 'pangloss/vim-javascript'
-   "Plugin 'scrooloose/nerdtree'
-   "Plugin 'scrooloose/syntastic'
-   "Plugin 'tpope/vim-surround'
-   "Plugin 'vimwiki/vimwiki'
-   Plugin 'VundleVim/Vundle.vim'
-   Plugin 'flazz/vim-colorschemes'
-   Plugin 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
-   Plugin 'tpope/vim-fugitive'
-   Plugin 'w0rp/ale'
+scriptencoding utf-8
+set mouse=a                         " automatically enable mouse usage
+set shortmess+=filmnrxoOtT          " abbreviation of messages (avoids 'hit enter')
+set virtualedit=onemore             " Allow for cursor beyond last character
+set viewoptions=folds,options,cursor,unix,slash " better unix / windows compatibility
+set history=1000                                " Store a ton of history (default is 20)
+set dictionary+=/usr/share/dict/words
+"set spell spelllang=en_gb                      " spell checking on
+silent! nnoremap <F6> :setlocal spell! spelllang=en_gb<CR>
+"silent! nnoremap <F7> :SyntasticToggleMode<CR>
+"silent! nnoremap <F8> :SyntasticCheck<CR>
+syntax on                                       " syntax highlighting
 
-   call vundle#end()
+cabbr <expr> %% expand('%:p:h')
 
-   " UltiSnips {
-       let g:UltiSnipsExpandTrigger="<tab>"
-       let g:UltiSnipsJumpForwardTrigger="<c-b>"
-       let g:UltiSnipsJumpBackwardTrigger="<c-z>"
-       let g:UltiSnipsSnippetDirectories=["UltiSnips"]
-
-       " If you want :UltiSnipsEdit to split your window.
-       " let g:UltiSnipsEditSplit="vertical"
-   " }
-
-   " NerdTree {
-       " autocmd vimenter * NERDTree " Load NERDTree on startup
-       "autocmd StdinReadPre * let s:std_in=1
-       "autocmd VimEnter * if argc() == 0 && !exists("s:std_in") | NERDTree | endif
-       "map <C-e> :NERDTreeToggle<CR>:NERDTreeMirror<CR>
-       "map <leader>e :NERDTreeFind<CR>
-       "nmap <leader>nt :NERDTreeFind<CR>
-
-       let NERDTreeShowBookmarks=1
-       let NERDTreeIgnore=['\\.pyc', '\\\~$', '\\.swo$', '\\.swp$', '\\.git', '\\.hg', '\\.svn', '\\.bzr']
-       let NERDTreeChDirMode=0
-       let NERDTreeQuitOnOpen=1
-       let NERDTreeShowHidden=1
-       let NERDTreeKeepTreeInNewTab=1
-   " }
-
-   " Syntastic {
-       "let g:syntastic_always_populate_loc_list = 1
-       "let g:syntastic_auto_loc_list = 1
-       "let g:syntastic_check_on_open = 0
-       "let g:syntastic_check_on_wq = 0
-       "let g:syntastic_python_checkers = ['pylint', 'pep8']
-   " }
-
-   " JSON {
-       nmap <leader>jt <Esc>:%!python -m json.tool<CR><Esc>:set filetype=json<CR>
-   " }
-
-   " fzf {
-       map <C-p> :FZF<CR>
-   " }
-
-   " ALE {
-       "let g:ale_lint_on_text_changed = 'never'
-       "let g:ale_lint_on_save = 1
-       "let g:ale_lint_on_enter = 0
-
-       "let g:ale_python_pylint_options = '--load-plugins pylint_django'
-   " }
+set backup                                      " keep backups
+" Directories for backup, swap, and views will be set by the call to InitializeDirectories() at the bottom
 
 
-" }
+" =========================================================
+"                           Formatting and editing
+set nowrap                          " don't wrap long lines
+set tabstop=4                       " 4 space tab
+set shiftwidth=4                    " the amount to block indent when using < and >
+set softtabstop=4                   " let backspace delete indent
+set expandtab                       " always insert tabs as spaces
+set smartindent                     " do smart autoindenting when starting a new line
+set autoindent                      " indent at the same level of the previous line
+set cindent                         " stricter indentation for C files
+set pastetoggle=<F12>               " pastetoggle (sane indentation on pastes)
+set backspace=indent,eol,start      " make backspace work
+set fileformat=unix                 " Use unix line breaks
+set undofile                        " Undo enabled, even after closing (.un~)
+
+filetype plugin indent on           " Automatically detect file types.
+
+if has("autocmd") && exists("+omnifunc")
+    autocmd Filetype *
+                \ if &omnifunc == "" |
+                \ setlocal omnifunc=syntaxcomplete#Complete |
+                \ endif
+endif
+"autocmd FileType c,cpp,java,php,js,python,twig,xml,yml
+"autocmd FileType python set omnifunc=python3complete#Complete
+
+" Remove trailing whitespaces and \^M chars
+autocmd! BufWritePre <buffer> :call setline(1,map(getline(1,"$"),'substitute(v:val,"\\\\s\\\\+$","","")'))
 
 
-" Navigation {
-  " File browsing {
-    " Read :help netrw-browse-maps for more info
-    let g:netrw_banner=0                            " Remove banner
-    let g:netrw_browse_split=4                      " Open in prior window
-    let g:netrw_altv=1                              " Open splits to the right
-    let g:netrw_liststyle=3                         " Tree view
-    " Hide files
-    let g:netrw_list_hide=netrw_gitignore#Hide()
-    let g:netrw_list_hide.=',\(^\|\s\s\)\zs\.\S\+'
-  " }
+" =========================================================
+"                           Navigation
+" File browsing
+" Read :help netrw-browse-maps for more info
+let g:netrw_banner=0                            " Remove banner
+let g:netrw_browse_split=4                      " Open in prior window
+let g:netrw_altv=1                              " Open splits to the right
+let g:netrw_liststyle=3                         " Tree view
+" Hide files
+let g:netrw_list_hide=netrw_gitignore#Hide()
+let g:netrw_list_hide.=',\(^\|\s\s\)\zs\.\S\+'
 
-  " Finding files {
-    set path+=** " Descend into subdirectories from the current path
-    set wildmenu " Display all matching files when tab complete
-  " }
+" Finding files
+set path+=** " Descend into subdirectories from the current path
+set wildmenu " Display all matching files when tab complete
 
-  " Jump to definition {
-    " https://www.fusionbox.com/blog/detail/navigating-your-django-project-with-vim-and-ctags/590/
-    " Add the following options to your ~/.ctags:
-    "  --fields=+l
-    "  --languages=python
-    "  --python-kinds=-iv
-    set tags=.tags
-    command MakeTags :call GenerateTagsFile()
-  " }
+" Jump to definition
+" https://www.fusionbox.com/blog/detail/navigating-your-django-project-with-vim-and-ctags/590/
+" Add the following options to your ~/.ctags:
+"  --fields=+l
+"  --languages=python
+"  --python-kinds=-iv
+set tags=.tags
+command! MakeTags :call GenerateTagsFile()
 
-  " Search {
-    set incsearch                                   " incremental search
-    set ignorecase                                  " case insensitive search
-    set smartcase                                   " case sensitive when uppercase
-  " }
-
-" }
+" Search
+set incsearch                               " incremental search
+set ignorecase                              " case insensitive search
+set smartcase                               " case sensitive when uppercase
+set wildignore+=*/tmp/*,*.so,*.swp,*.zip    " Ignore these file types when searching
 
 
-" Snippets {
-    nnoremap <leader> snip :read $HOME/.vim/snippets/
-    nmap <leader> html :read $HOME/.vim/snippets/skeleton.html<CR>
-" }
+" =========================================================
+"                           Snippets
+nnoremap <leader> snip :read $HOME/.vim/snippets/
+nmap <leader> html :read $HOME/.vim/snippets/skeleton.html<CR>
 
 
- " Vim UI {
-    try
-        colorscheme wombat256i
-    catch /^Vim\%((\a\+)\)\=:E185/
-        colorscheme ron
-    endtry
+" =========================================================
+" Plugins
+if empty(glob('~/.vim/autoload/plug.vim'))
+    silent !curl -fLo ~/.vim/autoload/plug.vim --create-dirs
+                \ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+    autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
+endif
 
-    set splitright                                                  " open new split panes to the right
+call plug#begin('~/.vim/plugged')
+"Plug 'Lokaltog/powerline', {'rtp': 'powerline/bindings/vim/'}
+"Plug 'SirVer/ultisnips'
+"Plug 'Valloric/YouCompleteMe', { 'dir': '~/.vim/plugged/YouCompleteMe', 'do': './install.py --all' }
+"Plug 'davidhalter/jedi-vim'
+"Plug 'elzr/vim-json'
+"Plug 'honza/vim-snippets'
+"Plug 'jistr/vim-nerdtree-tabs'
+"Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
+"Plug 'maralla/completor.vim'
+"Plug 'mxw/vim-jsx'
+"Plug 'pangloss/vim-javascript'
+"Plug 'scrooloose/nerdtree'
+"Plug 'scrooloose/syntastic'
+"Plug 'sheerun/vim-polyglot'
+"Plug 'tpope/vim-surround'
+"Plug 'vimwiki/vimwiki'
+"Plug 'w0rp/ale'
+Plug 'ajh17/VimCompletesMe'
+Plug 'flazz/vim-colorschemes'
+Plug 'tpope/vim-fugitive'
+if has('python') || has('python3')
+    Plug 'python-mode/python-mode', { 'branch': 'develop' }
+endif
+call plug#end()
 
-    set showmode                                                    " display the current mode
-    set cursorline                                                  " highlight current line
-    highlight CursorLine ctermbg=0
-    set colorcolumn=80,120                                          " set column markers
+" UltiSnips
+"let g:UltiSnipsExpandTrigger="<tab>"
+"let g:UltiSnipsJumpForwardTrigger="<c-b>"
+"let g:UltiSnipsJumpBackwardTrigger="<c-z>"
+"let g:UltiSnipsSnippetDirectories=["UltiSnips"]
 
-    set list
-    set listchars=tab:>.,trail:.,extends:\#,nbsp:.                  " show dodgy whitespace
+" If you want :UltiSnipsEdit to split your window.
+" let g:UltiSnipsEditSplit="vertical"
+
+" NerdTree
+" autocmd vimenter * NERDTree " Load NERDTree on startup
+"autocmd StdinReadPre * let s:std_in=1
+"autocmd VimEnter * if argc() == 0 && !exists("s:std_in") | NERDTree | endif
+"map <C-e> :NERDTreeToggle<CR>:NERDTreeMirror<CR>
+"map <leader>e :NERDTreeFind<CR>
+"nmap <leader>nt :NERDTreeFind<CR>
+
+"let NERDTreeShowBookmarks=1
+"let NERDTreeIgnore=['\\.pyc', '\\\~$', '\\.swo$', '\\.swp$', '\\.git', '\\.hg', '\\.svn', '\\.bzr']
+"let NERDTreeChDirMode=0
+"let NERDTreeQuitOnOpen=1
+"let NERDTreeShowHidden=1
+"let NERDTreeKeepTreeInNewTab=1
+
+" Syntastic
+"let g:syntastic_always_populate_loc_list = 1
+"let g:syntastic_auto_loc_list = 1
+"let g:syntastic_check_on_open = 0
+"let g:syntastic_check_on_wq = 0
+"let g:syntastic_python_checkers = ['pylint', 'pep8']
+
+" JSON
+nmap <leader>jt <Esc>:%!python -m json.tool<CR><Esc>:set filetype=json<CR>
+
+" fzf
+map <C-p> :FZF<CR>
+
+" Completor
+"let g:completor_python_binary = system('which python3')
+
+" ALE
+"let g:ale_lint_on_text_changed = 'never'
+let g:ale_lint_on_save = 1
+let g:ale_lint_on_enter = 0
+
+let g:ale_python_pylint_options = '--load-plugins pylint_django'
+" Enable completion where available.
+"let g:ale_completion_enabled = 1
+
+" python-mode
+let g:pymode_python = 'python3'
+let g:pymode_lint = 0  " ALE
+let g:pymode_folding = 0  " SimplyFold
+let g:pymode_run = 0
+let g:pymode_breakpoint = 0
+let g:pymode_options = 0
+let g:pymode_doc = 0
+let g:pymode_rope = 0
+let g:pymode_debug = 0
+
+let g:polyglot_disabled = ['python']  " Handled by python-mode
+let g:polyglot_disabled += ['html']  " Handled by python-mode
+
+autocmd FileType python setlocal omnifunc=pythoncomplete#Complete
 
 
-    if has('statusline')
-        highlight StatusLine ctermfg=28 ctermbg=0
-        highlight StatusLineNC ctermfg=32 ctermbg=0
-        set statusline=
-        set statusline+=%#StatusLineNC#
-        set statusline+=%F                                          " full path and filename
-        set statusline+=%#Statement#
-        set statusline+=%m                                          " modified flag
-        set statusline+=%=                                          " left / right divider
-        set statusline+=%#StatusLine#
-        set statusline+=%{fugitive#statusline()}
-        set statusline+=%#LineNr#
-        set statusline+=\ %y                                        " filetype
-        set statusline+=\ %{&fileencoding?&fileencoding:&encoding}
-        set statusline+=\ %p%%
-        set statusline+=\ %#Special#%l%#LineNr#[%L]:%c
-        set statusline+=%#warningmsg#
-        "set statusline+=%{SyntasticStatuslineFlag()}
-        set statusline+=%*
-        set laststatus=2                                            " always show the statusline
-    endif
-" }
+" =========================================================
+"                           Appearance
+set background=dark     " Assume a dark background
+set t_Co=256            " Enable 256 colors. Good for statusbar.
+
+try
+    colorscheme wombat256i
+catch /^Vim\%((\a\+)\)\=:E185/
+    colorscheme ron
+endtry
+
+set colorcolumn=80,120                  " set column markers
+set cursorline                          " highlight current line
+set number                              " turn on line numbers
+set showmatch                           " Highlight matching brackets
+set showmode                            " display the current mode
+set splitright                          " open new split panes to the right
+
+highlight CursorLine ctermbg=0
+highlight ColorColumn ctermbg=0 guibg=black
+" Highlight trailing whitespace
+highlight ExtraWhitespace ctermbg=red guibg=red
+match ExtraWhitespace /\s\+$/
+
+set list
+set listchars=tab:>.,trail:.,extends:\#,nbsp:.  " show dodgy whitespace
 
 
-" Functions {
+if has('statusline')
+    highlight StatusLine ctermfg=28 ctermbg=0
+    highlight StatusLineNC ctermfg=32 ctermbg=0
+    set statusline=
+    set statusline+=%#StatusLineNC#
+    set statusline+=%F                                          " full path and filename
+    set statusline+=%#Statement#
+    set statusline+=%m                                          " modified flag
+    set statusline+=%=                                          " left / right divider
+    set statusline+=%#StatusLine#
+    set statusline+=%{fugitive#statusline()}
+    set statusline+=%#LineNr#
+    set statusline+=\ %y                                        " filetype
+    set statusline+=\ %{&fileencoding?&fileencoding:&encoding}
+    set statusline+=\ %p%%
+    set statusline+=\ %#Special#%l%#LineNr#[%L]:%c
+    set statusline+=%#warningmsg#
+    "set statusline+=%{SyntasticStatuslineFlag()}
+    set statusline+=%*
+    set laststatus=2                                            " always show the statusline
+endif
 
+" =========================================================
+"                       Functions
 
 function! GenerateTagsFile()
     let output_file = '.tags'
@@ -324,8 +373,7 @@ function! ContextualFZF()
 endfunction
 map <C-p> :call ContextualFZF()<CR>
 
-
 call InitializeDirectories()
 
-" }
+" =========================================================
 
