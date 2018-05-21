@@ -1,7 +1,7 @@
 
 " =========================================================
 "                           Notes
-" Last updated: 13/05/2018
+" Last updated: 21/05/2018
 
 " Requirements:
 " - Git
@@ -72,7 +72,7 @@ syntax on                                       " syntax highlighting
 cabbr <expr> %% expand('%:p:h')
 
 set backup                                      " keep backups
-" Directories for backup, swap, and views will be set by the call to InitializeDirectories() at the bottom
+set undofile                                    " Undo enabled, even after closing (.un~)
 
 
 " =========================================================
@@ -88,7 +88,6 @@ set cindent                         " stricter indentation for C files
 set pastetoggle=<F12>               " pastetoggle (sane indentation on pastes)
 set backspace=indent,eol,start      " make backspace work
 set fileformat=unix                 " Use unix line breaks
-set undofile                        " Undo enabled, even after closing (.un~)
 
 filetype plugin indent on           " Automatically detect file types.
 
@@ -240,7 +239,7 @@ let g:pymode_debug = 0
 let g:polyglot_disabled = ['python']  " Handled by python-mode
 let g:polyglot_disabled += ['html']  " Handled by python-mode
 
-autocmd FileType python setlocal omnifunc=pythoncomplete#Complete
+autocmd FileType python setlocal omnifunc=python3complete#Complete
 
 
 " =========================================================
@@ -303,9 +302,15 @@ endfunction
 
 
 function! InitializeDirectories()
+    " Create and set directories for backup, swap, undo, and views
     let parent = $HOME
     let prefix = '.vim'
-    let dir_list = { '.backup': 'backupdir', '.views': 'viewdir', '.swap': 'directory' }
+    let dir_list = {
+                \'.backup': 'backupdir',
+                \'.swap': 'directory',
+                \'.undo': 'undodir',
+                \'.views': 'viewdir'
+                \}
 
     for [dirname, settingname] in items(dir_list)
         let directory = parent . "/" . prefix . "/" . dirname . "/"
